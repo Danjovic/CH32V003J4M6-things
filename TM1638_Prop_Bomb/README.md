@@ -25,7 +25,7 @@ The system automatically saves these settings to internal memory and enters stan
 Note: if no password is entered, the default code is 0000.
 
 ## 3. Starting the game 
-When the circuit is powerer on with the configuration switch unactivated, or right after setting the time and password, the display will show the ready message and will blink the Status LED. 
+When the circuit is powerer on with the configuration switch unactivated, or right after setting the time and password, the display will show the ready message and will blink the LED8 (Status). 
 
 To start the game, press Button S4. All LEDs will flash to signal that the game has begun, then the display will continuously shows the remaining time (MM:SS).
 
