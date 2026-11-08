@@ -21,7 +21,7 @@ Pinout  CH32V003J4M
          __ __
 TX Out 1|  v  |8            LED
    GND 2|     |7---[2k2]---->|----GND 
-  N.C. 3|     |6--SCS   to OLED display
+  N.C. 3|     |6--SCL   to OLED display
    +5V 4|_____|5--SDA 
 
 */
