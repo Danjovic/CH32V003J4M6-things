@@ -1,6 +1,7 @@
 /********************************** (C) COPYRIGHT *******************************
 - File Name          : main.c
 - Description        : CH32V003 RGB Fading + WS2812 on PD6 (Sequential & Pure RGB Modes)
+- Danjovic 2026
  *******************************************************************************/
 
 #include "debug.h"
