@@ -9,7 +9,8 @@ Test tool for SSD1306/SH1106 OLED display modules, either 128x64 or 128x32 pixel
 (Mounriver Studio)
 
 ## GLOW
-LED glower for RGB LED or Neopixel (WS2812). 
-(Mounriver Studio).
+LED glower for RGB LED or Neopixel (WS2812) (Mounriver Studio). 
+ 
+
 
 
