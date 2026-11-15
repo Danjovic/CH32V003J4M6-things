@@ -3,9 +3,8 @@
 
 
 #include "debug.h" 
-//#include "ch32v003_conf.h"
 
-// Defini??o dos pinos do TM1638 na Porta C
+// Definicao dos pinos do TM1638 na Porta C
 #define TM1638_STB_PORT  GPIOC
 #define TM1638_STB_PIN   GPIO_Pin_1
 
@@ -15,17 +14,17 @@
 #define TM1638_DIO_PORT  GPIOC
 #define TM1638_DIO_PIN   GPIO_Pin_4
 
-// Defini??o do pino do Buzzer/Rel¨¦ na Porta A
+// Definicao do pino do Buzzer/Rele na Porta A
 #define BUZZER_PORT      GPIOA
 #define BUZZER_PIN       GPIO_Pin_2
 
-// Buffer global do display (8 d¨ªgitos + 1 byte de LEDs)
+// Buffer global do display (8 digitos + 1 byte de LEDs)
 extern uint8_t tm1638_display_buffer[9];
 
 // Tabela de convers?o de 7 segmentos
 extern const uint8_t TM1638_Font[];
 
-// Prot¨®tipos das Fun??es
+// Prot®tipos das Funcoes
 void TM1638_Init(void);
 void TM1638_WriteByte(uint8_t data);
 void TM1638_SendCommand(uint8_t cmd);

@@ -1,23 +1,35 @@
+/**
+ *      _____ __  __ _  __ ____ ___   _        ___ ___  ___  ___     
+ *     |_   _|  \/  / |/ /|__ /( _ )_| |_     | _ \ _ \/ _ \| _ \___ 
+ *       | | | |\/| | / _ \|_ \/ _ \_   _|    |  _/   / (_) |  _/___|
+ *       |_| |_|_ |_|_\___/___/\___/ |_|____  |_|_|_|_\\___/|_| ___  
+ *      / __| || |__ /_  ) \ / /  \ /  \__ /  | _ )/ _ \|  \/  | _ ) 
+ *     | (__| __ ||_ \/ / \ V / () | () |_ \  | _ \ (_) | |\/| | _ \ 
+ *      \___|_||_|___/___| \_/ \__/ \__/___/  |___/\___/|_|  |_|___/ 
+ *                  
+ *    Danjovic 2026 
+ *    With the aid of Gemini
+ */
+
 #include "debug.h"
 #include "tm1638.h"
 
-// Vari¨¢veis globais de configura??o
+// Vari?veis globais de configuracao
 uint8_t time_digits[4] = {0, 0, 0, 0}; // MM:SS
-uint8_t pass_digits[4] = {0, 0, 0, 0}; // Senha de 4 d¨ªgitos
+uint8_t pass_digits[4] = {0, 0, 0, 0}; // Senha de 4 d?gitos
 
 
-
-// --- ESTRUTURA E CONFIGURA??ES DA FLASH ---
+// --- ESTRUTURA E CONFIGURACOES DA FLASH ---
 typedef struct {
     uint16_t saved_time;    // Tempo em segundos
-    uint8_t pass[4];        // Senha de 4 d¨ªgitos
-    uint16_t magic_check;   // N¨²mero m¨¢gico para validar dados gravados
+    uint8_t pass[4];        // Senha de 4 d?gitos
+    uint16_t magic_check;   // Numerero magico para validar dados gravados
 } BombConfig_t;
 
-#define CONFIG_FLASH_ADDRESS  0x08003FC0  // ?ltima p¨¢gina da Flash (16KB)
+#define CONFIG_FLASH_ADDRESS  0x08003FC0  // ultima p?gina da Flash (16KB)
 #define MAGIC_KEY             0xA55A
 
-// Fun??o para carregar a configura??o da Flash
+// Funcao para carregar a configuracao da Flash
 void Load_Bomb_Config(uint16_t *total_seconds, uint8_t *pass_digs) {
     BombConfig_t *config = (BombConfig_t *)CONFIG_FLASH_ADDRESS;
     
@@ -35,7 +47,7 @@ void Load_Bomb_Config(uint16_t *total_seconds, uint8_t *pass_digs) {
     pass_digs[3] = config->pass[3];
 }
 
-// Fun??o para salvar a configura??o na Flash
+// Funcao para salvar a configuracao na Flash
 void Save_Bomb_Config(void) {
     BombConfig_t new_config;
     new_config.saved_time = (time_digits[0] * 10 + time_digits[1]) * 60 + 
@@ -61,9 +73,7 @@ void Save_Bomb_Config(void) {
 }
 
 
-
-
-// Inicializa o pino PD6 como Entrada com Pull-Up (Condi??o de Programa??o)
+// Inicializa o pino PD6 como Entrada com Pull-Up (Condicao de Programacao)
 void Programming_Pin_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure = {0};
@@ -71,7 +81,7 @@ void Programming_Pin_Init(void)
     // Habilita o clock das Portas A, C, D e AFIO
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD | RCC_APB2Periph_AFIO, ENABLE);
     
-    // Configura PA2 como ENTRADA com Pull-Up interno (Bot?o de Programa??o)
+    // Configura PA2 como ENTRADA com Pull-Up interno (Botao de Programacao)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; 
     GPIO_Init(GPIOA, &GPIO_InitStructure);
@@ -79,17 +89,18 @@ void Programming_Pin_Init(void)
     // Garante que o pino PD6 inicia desligado (LOW)
     GPIO_WriteBit(GPIOD, GPIO_Pin_6, Bit_RESET);
 
-    // Configura PD6 como SA?DA Push-Pull 50MHz (LED / Buzzer de Alarme)
+    // Configura PD6 como SAIDA Push-Pull 50MHz (LED / Buzzer de Alarme)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
 }
 
+
 // --- ETAPA 1: Ajuste do Tempo ---
 void Run_Time_Adjustment(void)
 {
-    // Exibe "TIME" nos 4 primeiros d¨ªgitos (0 a 3)
+    // Exibe "TIME" nos 4 primeiros d?gitos (0 a 3)
     // T = 0x78, I = 0x30, M = 0x54, E = 0x79
     tm1638_display_buffer[0] = 0x78; // T
     tm1638_display_buffer[1] = 0x30; // I
@@ -97,7 +108,7 @@ void Run_Time_Adjustment(void)
     tm1638_display_buffer[3] = 0x79; // E
 
     while(1) {
-        // Atualiza os d¨ªgitos 5 a 8 com o tempo atual (¨ªndices 4 a 7 do buffer)
+        // Atualiza os d?gitos 5 a 8 com o tempo atual (?ndices 4 a 7 do buffer)
         tm1638_display_buffer[4] = TM1638_Font[time_digits[0]];
         tm1638_display_buffer[5] = TM1638_Font[time_digits[1]] |0x80;
         tm1638_display_buffer[6] = TM1638_Font[time_digits[2]];
@@ -110,7 +121,7 @@ void Run_Time_Adjustment(void)
 
         uint8_t btn = TM1638_ReadButtons();
         if (btn != 0) {
-            // Bot?o 1 (Bit 0): ENTER / Avan?ar para a senha
+            // Botao 1 (Bit 0): ENTER / Avancar para a senha
             if (btn & (1 << 0)) {
                 tm1638_display_buffer[8] = 0xFF;
                 TM1638_UpdateDisplay();
@@ -118,7 +129,7 @@ void Run_Time_Adjustment(void)
                 break;
             }
 
-            // Bot?o 2 (Bit 1): Reseta o tempo para 00:00
+            // Botao 2 (Bit 1): Reseta o tempo para 00:00
             if (btn & (1 << 1)) {
                 time_digits[0] = 0;
                 time_digits[1] = 0;
@@ -127,7 +138,7 @@ void Run_Time_Adjustment(void)
                 Delay_Ms(200);
             }
 
-            // Bot?es 5 a 8 (Bits 4 a 7): Incrementam os d¨ªgitos do tempo individualmente
+            // Botoes 5 a 8 (Bits 4 a 7): Incrementam os d?gitos do tempo individualmente
             if (btn & (1 << 4)) { time_digits[0] = (time_digits[0] + 1) % 10; Delay_Ms(200); }
             if (btn & (1 << 5)) { time_digits[1] = (time_digits[1] + 1) % 10; Delay_Ms(200); }
             if (btn & (1 << 6)) { time_digits[2] = (time_digits[2] + 1) % 6; Delay_Ms(200); }
@@ -141,14 +152,14 @@ void Run_Time_Adjustment(void)
 int Run_Password_Adjustment(void)
 {
     while(1) {
-        // Exibe "PASS" nos 4 primeiros d¨ªgitos (0 a 3)
+        // Exibe "PASS" nos 4 primeiros d?gitos (0 a 3)
         // P = 0x73, A = 0x77, S = 0x6D
         tm1638_display_buffer[0] = 0x73; // P
         tm1638_display_buffer[1] = 0x77; // A
         tm1638_display_buffer[2] = 0x6D; // S
         tm1638_display_buffer[3] = 0x6D; // S
 
-        // Exibe a senha atual nos 4 ¨²ltimos d¨ªgitos (4 a 7)
+        // Exibe a senha atual nos 4 ultimos d?gitos (4 a 7)
         tm1638_display_buffer[4] = TM1638_Font[pass_digits[0]];
         tm1638_display_buffer[5] = TM1638_Font[pass_digits[1]];
         tm1638_display_buffer[6] = TM1638_Font[pass_digits[2]];
@@ -161,7 +172,7 @@ int Run_Password_Adjustment(void)
 
         uint8_t btn = TM1638_ReadButtons();
         if (btn != 0) {
-            // Bot?o 1 (Bit 0): ENTER
+            // Botao 1 (Bit 0): ENTER
             if (btn & (1 << 0)) {
                 uint16_t total_time = (time_digits[0] * 1000) + (time_digits[1] * 100) + 
                                       (time_digits[2] * 10) + time_digits[3];
@@ -179,11 +190,11 @@ int Run_Password_Adjustment(void)
                     tm1638_display_buffer[8] = 0xFF;
                     TM1638_UpdateDisplay();
                     Delay_Ms(400);
-                    return 1; // Configura??o v¨¢lida!
+                    return 1; // configuracao v?lida!
                 }
             }
 
-            // Bot?o 2 (Bit 1): Reseta a senha para 0000
+            // Botao 2 (Bit 1): Reseta a senha para 0000
             if (btn & (1 << 1)) {
                 pass_digits[0] = 0;
                 pass_digits[1] = 0;
@@ -192,7 +203,7 @@ int Run_Password_Adjustment(void)
                 Delay_Ms(200);
             }
 
-            // Bot?es 5 a 8 (Bits 4 a 7): Incrementam os d¨ªgitos da senha individualmente
+            // Botoes 5 a 8 (Bits 4 a 7): Incrementam os d?gitos da senha individualmente
             if (btn & (1 << 4)) { pass_digits[0] = (pass_digits[0] + 1) % 10; Delay_Ms(200); }
             if (btn & (1 << 5)) { pass_digits[1] = (pass_digits[1] + 1) % 10; Delay_Ms(200); }
             if (btn & (1 << 6)) { pass_digits[2] = (pass_digits[2] + 1) % 10; Delay_Ms(200); }
@@ -202,7 +213,11 @@ int Run_Password_Adjustment(void)
     }
 }
 
-
+//                 _      
+//      _ __  __ _(_)_ _  
+//     | '  \/ _` | | ' \ 
+//     |_|_|_\__,_|_|_||_|
+//                        
 int main(void)
 {
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
@@ -213,7 +228,7 @@ int main(void)
     Programming_Pin_Init();
     Delay_Ms(50);
     
-// --- L?GICA DE BOOT (FLASH OU BOT?O) ---
+// --- LOGICA DE BOOT (FLASH OU BOTAO) ---
     BombConfig_t *config = (BombConfig_t *)CONFIG_FLASH_ADDRESS;
     uint8_t button_pressed = (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2) == Bit_RESET);
     uint8_t flash_is_empty = (config->magic_check != MAGIC_KEY);
@@ -224,8 +239,8 @@ int main(void)
             int result = Run_Password_Adjustment(); // Tela 2: Ajusta a Senha (PASS)
             
             if (result == 1) {
-                Save_Bomb_Config();         // Salva na Flash ao t¨¦rmino
-                break; // Configura??o aceita! Sai para o jogo
+                Save_Bomb_Config();         // Salva na Flash ao termino
+                break; // configuracao aceita! Sai para o jogo
             }
         }
     } else {
@@ -233,32 +248,13 @@ int main(void)
         Load_Bomb_Config(NULL, pass_digits);
     }
 
-/*
-    // Verifica se o pino PD6 est¨¢ aterrado para entrar no Modo de Programa??o
-//    uint8_t enter_programming = (GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6) == Bit_RESET);
-    uint8_t enter_programming = (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2) == Bit_RESET);
 
-    if (enter_programming) {
-        while(1) {
-            Run_Time_Adjustment();          // Tela 1: Ajusta o Tempo (TIME)
-            int result = Run_Password_Adjustment(); // Tela 2: Ajusta a Senha (PASS)
-            
-            if (result == 1) {
-                break; // Configura??o aceita! Sai para o jogo
-            }
-        }
-    } else {
-        // Caso n?o entre em programa??o por jumper, define um tempo padr?o de teste (ex: 05:00)
-        time_digits[0] = 0; time_digits[1] = 5; time_digits[2] = 0; time_digits[3] = 0;
-    }
-*/
-    // --- ESTADO: ARMED (Aguardando Start com Bot?o 4) ---
-// --- ESTADO: ARMED (Aguardando Start com Bot?o 4) ---
+// --- ESTADO: ARMED (Aguardando Start com Botao 4) ---
     uint32_t blink_timer = 0;
     uint8_t led_state = 0;
 
     while(1) {
-        // Exibe "rEAdY" nos d¨ªgitos 1 a 5 (ou rEAdY no visor)
+        // Exibe "rEAdY" nos d?gitos 1 a 5 (ou rEAdY no visor)
         // r = 0x50, E = 0x79, A = 0x77, d = 0x5E, y = 0x6E (ou Y)
         tm1638_display_buffer[0] = 0x50; // r
         tm1638_display_buffer[1] = 0x79; // E
@@ -280,7 +276,7 @@ int main(void)
         TM1638_UpdateDisplay();
 
         uint8_t btn = TM1638_ReadButtons();
-        // Bot?o 4 corresponde ao Bit 3 (0-indexed)
+        // Botao 4 corresponde ao Bit 3 (0-indexed)
         if (btn & (1 << 3)) {
             // Pisca todos os LEDs rapidamente para confirmar o Start
             tm1638_display_buffer[8] = 0xFF;
@@ -293,8 +289,8 @@ int main(void)
     }
 
     // --- ESTADO: JOGO PRONTO / AGUARDANDO CONTAGEM ---
-    // Exibe o tempo nos d¨ªgitos 1 a 4 (¨ªndices 0 a 3) e "----" nos d¨ªgitos 5 a 8 (¨ªndices 4 a 7)
-    // Segmento de tra?o '-' = 0x40
+    // Exibe o tempo nos d?gitos 1 a 4 (?ndices 0 a 3) e "----" nos d?gitos 5 a 8 (?ndices 4 a 7)
+    // Segmento de traco '-' = 0x40
 
         tm1638_display_buffer[0] = TM1638_Font[time_digits[0]];
         tm1638_display_buffer[1] = TM1638_Font[time_digits[1]];
@@ -316,7 +312,7 @@ int main(void)
 
 // --- ESTADO: JOGO EM ANDAMENTO (CONTAGEM + DESARME) ---
     
-    // 1. Converte o array de d¨ªgitos inicial para o total de segundos
+    // 1. Converte o array de d?gitos inicial para o total de segundos
     uint32_t total_seconds = (time_digits[0] * 10 + time_digits[1]) * 60 + 
                              (time_digits[2] * 10 + time_digits[3]);
 
@@ -324,13 +320,15 @@ int main(void)
     
     // Valores reais guardados para a senha (iniciam em 0)
     uint8_t guess_digits[4] = {0, 0, 0, 0}; 
-    // Flag de exibi??o: 1 = mostra o n¨²mero, 0 = mostra o tra?o "-" por timeout
-    uint8_t display_active[4] = {0, 0, 0, 0}; 
-    // Temporizadores de inatividade do display (agora com timeout de 800ms)
+
+    // Flag de exibicao: 1 = mostra o numero, 0 = mostra o traco "-" por timeout
+    uint8_t display_active[4] = {0, 0, 0, 0};
+
+    // Temporizadores de inatividade do display (timeout de 800ms)
     uint32_t digit_timers[4] = {0, 0, 0, 0}; 
 
     while(1) {
-        // Se o tempo acabou (Estouro / Explos?o)
+        // Se o tempo acabou (Estouro / Explosao)
         if (total_seconds == 0) {
 
             // Liga o alarme em PA2 (Buzzer / LED)
@@ -365,7 +363,7 @@ int main(void)
         time_digits[2] = current_secs / 10;
         time_digits[3] = current_secs % 10;
 
-        // Atualiza rel¨®gio (MM:SS) nos 4 primeiros d¨ªgitos
+        // Atualiza relogio (MM:SS) nos 4 primeiros d?gitos
         tm1638_display_buffer[0] = TM1638_Font[time_digits[0]];
         tm1638_display_buffer[2] = TM1638_Font[time_digits[2]];
         tm1638_display_buffer[3] = TM1638_Font[time_digits[3]];
@@ -373,23 +371,23 @@ int main(void)
 
         // Loop de 1 segundo (dividido em 8 passos de 125ms = 4 Hz no ponto decimal)
         for (uint8_t i = 0; i < 8; i++) {
-            // Atualiza o ponto decimal piscando a 4Hz no d¨ªgito 2
+            // Atualiza o ponto decimal piscando a 4Hz no d?gito 2
             tm1638_display_buffer[1] = TM1638_Font[time_digits[1]] | dp_state;
             dp_state ^= 0x80;
 
-            // --- TRATAMENTO DOS D?GITOS DA SENHA (5 a 8) ---
+            // --- TRATAMENTO DOS DIGITOS DA SENHA (5 a 8) ---
             for (uint8_t d = 0; d < 4; d++) {
                 if (digit_timers[d] > 0) {
                     if (digit_timers[d] > 125) digit_timers[d] -= 125;
                     else {
                         digit_timers[d] = 0;
-                        display_active[d] = 0; // O display expira e mostra o tra?o "-", mas o valor ¨¦ preservado
+                        display_active[d] = 0; // O display expira e mostra o traco "-", mas o valor ¨¦ preservado
                     }
                 }
 
-                // Renderiza o n¨²mero (se ativo) ou o tra?o "-" (0x40) se o display expirou
+                // Renderiza o numero (se ativo) ou o traco "-" (0x40) se o display expirou
                 if (display_active[d] == 0) {
-                    tm1638_display_buffer[4 + d] = 0x40; // Tra?o
+                    tm1638_display_buffer[4 + d] = 0x40; // Traco
                 } else {
                     tm1638_display_buffer[4 + d] = TM1638_Font[guess_digits[d]];
                 }
@@ -397,12 +395,12 @@ int main(void)
 
             TM1638_UpdateDisplay();
 
-            // --- LEITURA DOS BOT?ES DURANTE A CONTAGEM ---
+            // --- LEITURA DOS BOTOES DURANTE A CONTAGEM ---
             uint8_t btn = TM1638_ReadButtons();
             if (btn != 0) {
-                // Bot?o 1 (Bit 0): ENTER / Confirmar Senha
+                // Botao 1 (Bit 0): ENTER / Confirmar Senha
                 if (btn & (1 << 0)) {
-                    // Para confirmar, todos os 4 d¨ªgitos precisam estar com o display ativo
+                    // Para confirmar, todos os 4 d?gitos precisam estar com o display ativo
                         
                     if (guess_digits[0] == pass_digits[0] && guess_digits[1] == pass_digits[1] &&
                         guess_digits[2] == pass_digits[2] && guess_digits[3] == pass_digits[3]) {
@@ -437,7 +435,7 @@ int main(void)
                         TM1638_UpdateDisplay();
                         Delay_Ms(300);
 
-                        // Reseta a exibi??o para tra?os
+                        // Reseta a exibicao para tracos
                         for(uint8_t d=0; d<4; d++) {
                             display_active[d] = 0;
                             digit_timers[d] = 0;
@@ -447,7 +445,7 @@ int main(void)
                 Delay_Ms(200);
             
 
-                // Bot?o 2 (Bit 1): Zera a senha digitada (retorna tudo para 0000 e tra?os)
+                // Botao 2 (Bit 1): Zera a senha digitada (retorna tudo para 0000 e tracos)
                 if (btn & (1 << 1)) {
                     for(uint8_t d=0; d<4; d++) {
                         guess_digits[d] = 0;
@@ -457,26 +455,26 @@ int main(void)
                     Delay_Ms(200);
                 }
 
-                // Bot?es 5 a 8 (Bits 4 a 7): Incrementam os d¨ªgitos da senha (timeout de 800ms)
-                if (btn & (1 << 4)) { // Bot?o 5 -> D¨ªgito 5
+                // Botoes 5 a 8 (Bits 4 a 7): Incrementam os d?gitos da senha (timeout de 800ms)
+                if (btn & (1 << 4)) { // Botao 5 -> D?gito 5
                     guess_digits[0] = (guess_digits[0] + 1) % 10;
                     display_active[0] = 1;  
                     digit_timers[0] = 800;  // Timeout ajustado para 800ms
                     Delay_Ms(150);
                 }
-                if (btn & (1 << 5)) { // Bot?o 6 -> D¨ªgito 6
+                if (btn & (1 << 5)) { // Botao 6 -> D?gito 6
                     guess_digits[1] = (guess_digits[1] + 1) % 10;
                     display_active[1] = 1;
                     digit_timers[1] = 800;
                     Delay_Ms(150);
                 }
-                if (btn & (1 << 6)) { // Bot?o 7 -> D¨ªgito 7
+                if (btn & (1 << 6)) { // Botao 7 -> D?gito 7
                     guess_digits[2] = (guess_digits[2] + 1) % 10;
                     display_active[2] = 1;
                     digit_timers[2] = 800;
                     Delay_Ms(150);
                 }
-                if (btn & (1 << 7)) { // Bot?o 8 -> D¨ªgito 8
+                if (btn & (1 << 7)) { // Botao 8 -> D?gito 8
                     guess_digits[3] = (guess_digits[3] + 1) % 10;
                     display_active[3] = 1;
                     digit_timers[3] = 800;

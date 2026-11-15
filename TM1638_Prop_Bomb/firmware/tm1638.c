@@ -1,6 +1,6 @@
 #include "tm1638.h"
 
-// Buffer global de 9 posi??es
+// Buffer global de 9 posicoes
 uint8_t tm1638_display_buffer[9] = {0};
 
 // Tabela de fonte 7 segmentos (0-9, A, b, C, d, E, F, Espa?o)
@@ -25,13 +25,13 @@ void TM1638_Init(void)
     // Habilita o clock das Portas A e C
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC, ENABLE);
 
-    // Configura STB, CLK e DIO da Porta C como Sa赤da Push-Pull (50MHz)
+    // Configura STB, CLK e DIO da Porta C como Saida Push-Pull (50MHz)
     GPIO_InitStructure.GPIO_Pin = TM1638_STB_PIN | TM1638_CLK_PIN | TM1638_DIO_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-    // Configura o pino do Buzzer/Rel谷 na Porta A como Sa赤da
+    // Configura o pino do Buzzer/Rele na Porta A como Saida
     GPIO_InitStructure.GPIO_Pin = BUZZER_PIN;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
@@ -82,9 +82,9 @@ void TM1638_SetBrightness(uint8_t brightness, uint8_t on)
 void TM1638_UpdateDisplay(void)
 {
     uint8_t i;
-    TM1638_SendCommand(0x44); // Endere?o fixo
+    TM1638_SendCommand(0x44); // Endereco fixo
 
-    // Escreve os 8 d赤gitos nos endere?os pares (0xC0, 0xC2, ...)
+    // Escreve os 8 digitos nos enderecos pares (0xC0, 0xC2, ...)
     for (i = 0; i < 8; i++) {
         GPIO_ResetBits(TM1638_STB_PORT, TM1638_STB_PIN);
         TM1638_WriteByte(0xC0 | (i << 1));
@@ -92,7 +92,7 @@ void TM1638_UpdateDisplay(void)
         GPIO_SetBits(TM1638_STB_PORT, TM1638_STB_PIN);
     }
 
-    // Escreve os LEDs individuais nos endere?os 赤mpares (0xC1, 0xC3, ...)
+    // Escreve os LEDs individuais nos enderecos impares (0xC1, 0xC3, ...)
     for (i = 0; i < 8; i++) {
         uint8_t led_state = (tm1638_display_buffer[8] & (1 << i)) ? 1 : 0;
         GPIO_ResetBits(TM1638_STB_PORT, TM1638_STB_PIN);
@@ -126,29 +126,29 @@ uint8_t TM1638_ReadButtons(void)
             GPIO_SetBits(TM1638_CLK_PORT, TM1638_CLK_PIN);
         }
 
-        // Remapeamento dos bot?es (f赤sicos: 1, 3, 5, 7, 2, 4, 6, 8)
+        // Remapeamento dos bot?es (fisicos: 1, 3, 5, 7, 2, 4, 6, 8)
         if (i == 0) {
-            if (byte_val & 0x01) raw[0] = 1; // Bot?o 1
-            if (byte_val & 0x10) raw[4] = 1; // Bot?o 5 -> Bot?o 2 l車gico
+            if (byte_val & 0x01) raw[0] = 1; // Botao 1
+            if (byte_val & 0x10) raw[4] = 1; // Botao 5 -> Botao 2 logico
         }
         if (i == 1) {
-            if (byte_val & 0x01) raw[1] = 1; // Bot?o 2 -> Bot?o 3 l車gico
-            if (byte_val & 0x10) raw[5] = 1; // Bot?o 6 -> Bot?o 4 l車gico
+            if (byte_val & 0x01) raw[1] = 1; // Botao 2 -> Botao 3 logico
+            if (byte_val & 0x10) raw[5] = 1; // Botao 6 -> Botao 4 logico
         }
         if (i == 2) {
-            if (byte_val & 0x01) raw[2] = 1; // Bot?o 3 -> Bot?o 5 l車gico
-            if (byte_val & 0x10) raw[6] = 1; // Bot?o 7 -> Bot?o 6 l車gico
+            if (byte_val & 0x01) raw[2] = 1; // Botao 3 -> Botao 5 logico
+            if (byte_val & 0x10) raw[6] = 1; // Botao 7 -> Botao 6 logico
         }
         if (i == 3) {
-            if (byte_val & 0x01) raw[3] = 1; // Bot?o 4 -> Bot?o 7 l車gico
-            if (byte_val & 0x10) raw[7] = 1; // Bot?o 8 -> Bot?o 8 l車gico
+            if (byte_val & 0x01) raw[3] = 1; // Botao 4 -> Botao 7 logico
+            if (byte_val & 0x10) raw[7] = 1; // Botao 8 -> Botao 8 logico
         }
     }
 
     GPIO_SetBits(TM1638_STB_PORT, TM1638_STB_PIN);
     TM1638_SetDIO_Mode(GPIO_Mode_Out_PP);
 
-    // Mapeia para bits sequenciais (Bit 0 = Bot?o 1 ... Bit 7 = Bot?o 8)
+    // Mapeia para bits sequenciais (Bit 0 = Botao 1 ... Bit 7 = Botao 8)
     for (uint8_t k = 0; k < 8; k++) {
         if (raw[k]) {
             keys |= (1 << k);
